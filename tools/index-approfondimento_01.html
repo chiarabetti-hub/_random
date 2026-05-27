@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
   <style>
-
     body {
       margin: 0;
       overflow: hidden;
@@ -79,241 +79,244 @@
       left: 355px;
       width: 160px;
     }
-
   </style>
 </head>
+
 <body>
 
-<input type="number" id="seedInput" placeholder="Numero">
+  <input type="number" id="seedInput" placeholder="Numero">
 
-<button id="generateBtn">Genera</button>
+  <button id="generateBtn">Genera</button>
 
-<button id="downloadBtn" style="position:absolute; top:20px; right:20px; height:44px; border-radius:10px; font-size:16px; cursor:pointer; border:2px solid black; background:white; color:black; transition:0.2s;">Download image</button>
+  <button id="downloadBtn"
+    style="position:absolute; top:20px; right:20px; height:44px; border-radius:10px; font-size:16px; cursor:pointer; border:2px solid black; background:white; color:black; transition:0.2s;">Download
+    image</button>
 
-<script>
+  <script>
 
-let currentSeed = 314159;
+    let currentSeed = 314159;
 
-document.getElementById('generateBtn').addEventListener('click', () => {
+    document.getElementById('generateBtn').addEventListener('click', () => {
 
-  let value = parseInt(document.getElementById('seedInput').value);
+      let value = parseInt(document.getElementById('seedInput').value);
 
-  if(isNaN(value)) {
+      if (isNaN(value)) {
 
-    value = Math.floor(Math.random() * 999999);
-  }
-
-  currentSeed = value;
-
-  redraw();
-});
-
-document.getElementById('downloadBtn').addEventListener('click', () => {
-  const canvas = document.querySelector('canvas');
-  if (!canvas) return;
-  const scale = 2; // double resolution
-  const w = canvas.width * scale;
-  const h = canvas.height * scale;
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = w;
-  tempCanvas.height = h;
-  const ctx = tempCanvas.getContext('2d');
-  ctx.scale(scale, scale);
-  ctx.drawImage(canvas, 0, 0);
-  const link = document.createElement('a');
-  link.href = tempCanvas.toDataURL('image/png');
-  link.download = `artwork_${Date.now()}.png`;
-  link.click();
-});
-
-document.getElementById('randomBtn').addEventListener('click', () => {
-
-  currentSeed = Math.floor(Math.random() * 999999);
-
-  document.getElementById('seedInput').value = currentSeed;
-
-  redraw();
-});
-
-function setup() {
-
-  let cnv = createCanvas(windowWidth, windowHeight);
-
-  cnv.style('background', 'transparent');
-
-  clear();
-
-  noLoop();
-
-  redraw();
-}
-
-function draw() {
-
-  clear();
-
-  generateArtwork(currentSeed);
-}
-
-function seededRandom(seed) {
-
-  let x = Math.sin(seed) * 10000;
-
-  return x - Math.floor(x);
-}
-
-function generateArtwork(seed) {
-  // Determine grid density based on seed (more elements for larger seed)
-  let base = seed % 100; // use last two digits
-  let grid = 6 + (base % 5); // grid between 6-10
-  let size = min(width, height) * 0.72;
-  let cell = size / grid;
-  let offsetX = width / 2 - size / 2;
-  let offsetY = height / 2 - size / 2;
-
-  let localSeed = seed;
-  noFill();
-
-  for (let y = 0; y < grid; y++) {
-    for (let x = 0; x < grid; x++) {
-      // Determine color based on the current digit (0-9)
-      let digit = localSeed % 10;
-      let hue = (digit % 2 === 0) ? 200 + digit * 2 : 20 + digit * 4; // cool for even, warm for odd
-      let sat = 60 + (digit * 3);
-      let light = 50 + (digit * 2);
-      stroke(`hsl(${hue}, ${sat}%, ${light}%)`);
-
-      // Rotation depends on seed digit
-      let rotationValue = (digit / 10) * TWO_PI;
-
-      // Number of rectangles per cell varies with digit
-      let amount = 2 + Math.floor(digit / 2);
-
-      // Base size for rectangles
-      let baseSize = cell * 0.5;
-
-      push();
-      translate(offsetX + x * cell + cell / 2, offsetY + y * cell + cell / 2);
-      rotate(rotationValue);
-
-      for (let i = 0; i < amount; i++) {
-        let localRandom = seededRandom(localSeed + i * 99);
-        let rectSize = baseSize * (0.5 + localRandom);
-        rotate(localRandom * 0.35);
-        rect(0, 0, rectSize, rectSize);
+        value = Math.floor(Math.random() * 999999);
       }
-      pop();
 
-      // Update seed to evolve pattern
-      localSeed += 17;
+      currentSeed = value;
+
+      redraw();
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const canvas = document.querySelector('canvas');
+      if (!canvas) return;
+      const scale = 2; // double resolution
+      const w = canvas.width * scale;
+      const h = canvas.height * scale;
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = w;
+      tempCanvas.height = h;
+      const ctx = tempCanvas.getContext('2d');
+      ctx.scale(scale, scale);
+      ctx.drawImage(canvas, 0, 0);
+      const link = document.createElement('a');
+      link.href = tempCanvas.toDataURL('image/png');
+      link.download = `artwork_${Date.now()}.png`;
+      link.click();
+    });
+
+    document.getElementById('randomBtn').addEventListener('click', () => {
+
+      currentSeed = Math.floor(Math.random() * 999999);
+
+      document.getElementById('seedInput').value = currentSeed;
+
+      redraw();
+    });
+
+    function setup() {
+
+      let cnv = createCanvas(windowWidth, windowHeight);
+
+      cnv.style('background', 'transparent');
+
+      clear();
+
+      noLoop();
+
+      redraw();
     }
-  }
-}
 
-/* Old generation code start */
+    function draw() {
 
-  let size = min(width, height) * 0.72;
+      clear();
 
-  let cell = size / grid;
+      generateArtwork(currentSeed);
+    }
 
-  let offsetX = width / 2 - size / 2;
+    function seededRandom(seed) {
 
-  let offsetY = height / 2 - size / 2;
+      let x = Math.sin(seed) * 10000;
 
-  let localSeed = seed;
+      return x - Math.floor(x);
+    }
 
-  noFill();
+    function generateArtwork(seed) {
+      // Determine grid density based on seed (more elements for larger seed)
+      let base = seed % 100; // use last two digits
+      let grid = 6 + (base % 5); // grid between 6-10
+      let size = min(width, height) * 0.72;
+      let cell = size / grid;
+      let offsetX = width / 2 - size / 2;
+      let offsetY = height / 2 - size / 2;
 
-  for(let y = 0; y < grid; y++) {
+      let localSeed = seed;
+      noFill();
 
-    for(let x = 0; x < grid; x++) {
+      for (let y = 0; y < grid; y++) {
+        for (let x = 0; x < grid; x++) {
+          // Determine color based on the current digit (0-9)
+          let digit = localSeed % 10;
+          let hue = (digit % 2 === 0) ? 200 + digit * 2 : 20 + digit * 4; // cool for even, warm for odd
+          let sat = 60 + (digit * 3);
+          let light = 50 + (digit * 2);
+          stroke(`hsl(${hue}, ${sat}%, ${light}%)`);
 
-      let r = seededRandom(localSeed);
+          // Rotation depends on seed digit
+          let rotationValue = (digit / 10) * TWO_PI;
 
-      let centerX = offsetX + x * cell + cell / 2;
+          // Number of rectangles per cell varies with digit
+          let amount = 2 + Math.floor(digit / 2);
 
-      let centerY = offsetY + y * cell + cell / 2;
+          // Base size for rectangles
+          let baseSize = cell * 0.5;
 
-      let rotationValue = r * TWO_PI;
+          push();
+          translate(offsetX + x * cell + cell / 2, offsetY + y * cell + cell / 2);
+          rotate(rotationValue);
 
-      let amount = floor(r * 10) + 3;
+          for (let i = 0; i < amount; i++) {
+            let localRandom = seededRandom(localSeed + i * 99);
+            let rectSize = baseSize * (0.5 + localRandom);
+            rotate(localRandom * 0.35);
+            rect(0, 0, rectSize, rectSize);
+          }
+          pop();
 
-      let digit = localSeed % 10;
+          // Update seed to evolve pattern
+          localSeed += 17;
+        }
+      }
+    }
 
-      push();
+    /* Old generation code start */
 
-      translate(centerX, centerY);
+    let size = min(width, height) * 0.72;
 
-      rotate(rotationValue);
+    let cell = size / grid;
 
-      for(let i = 0; i < amount; i++) {
+    let offsetX = width / 2 - size / 2;
 
-        let localRandom = seededRandom(localSeed + i * 99);
+    let offsetY = height / 2 - size / 2;
 
-        let rectSize = 20 + localRandom * 60;
+    let localSeed = seed;
 
-        // COLORI BASATI SU PARI / DISPARI
+    noFill();
 
-        if(digit % 2 == 0) {
+    for (let y = 0; y < grid; y++) {
 
-          stroke(
-            50,
-            120 + digit * 10,
-            180 + digit * 5,
-            80
-          );
+      for (let x = 0; x < grid; x++) {
 
-        } else {
+        let r = seededRandom(localSeed);
 
-          stroke(
-            180 + digit * 6,
-            70,
-            50,
-            80
+        let centerX = offsetX + x * cell + cell / 2;
+
+        let centerY = offsetY + y * cell + cell / 2;
+
+        let rotationValue = r * TWO_PI;
+
+        let amount = floor(r * 10) + 3;
+
+        let digit = localSeed % 10;
+
+        push();
+
+        translate(centerX, centerY);
+
+        rotate(rotationValue);
+
+        for (let i = 0; i < amount; i++) {
+
+          let localRandom = seededRandom(localSeed + i * 99);
+
+          let rectSize = 20 + localRandom * 60;
+
+          // COLORI BASATI SU PARI / DISPARI
+
+          if (digit % 2 == 0) {
+
+            stroke(
+              50,
+              120 + digit * 10,
+              180 + digit * 5,
+              80
+            );
+
+          } else {
+
+            stroke(
+              180 + digit * 6,
+              70,
+              50,
+              80
+            );
+          }
+
+          strokeWeight(1 + localRandom * 2);
+
+          rectMode(CENTER);
+
+          rotate(localRandom * 0.35);
+
+          rect(
+            localRandom * 10,
+            localRandom * 10,
+            rectSize,
+            rectSize
           );
         }
 
-        strokeWeight(1 + localRandom * 2);
+        pop();
 
-        rectMode(CENTER);
-
-        rotate(localRandom * 0.35);
-
-        rect(
-          localRandom * 10,
-          localRandom * 10,
-          rectSize,
-          rectSize
-        );
+        localSeed += 17;
       }
-
-      pop();
-
-      localSeed += 17;
     }
-  }
 }
 
-function keyPressed() {
+    function keyPressed() {
 
-  if(key === ' ') {
+      if (key === ' ') {
 
-    currentSeed = Math.floor(Math.random() * 999999);
+        currentSeed = Math.floor(Math.random() * 999999);
 
-    document.getElementById('seedInput').value = currentSeed;
+        document.getElementById('seedInput').value = currentSeed;
 
-    redraw();
-  }
-}
+        redraw();
+      }
+    }
 
-function windowResized() {
+    function windowResized() {
 
-  resizeCanvas(windowWidth, windowHeight);
+      resizeCanvas(windowWidth, windowHeight);
 
-  redraw();
-}
+      redraw();
+    }
 
-</script>
+  </script>
 
 </body>
+
 </html>

@@ -1,4 +1,6 @@
-*, *:before, *:after {
+*,
+*:before,
+*:after {
 	box-sizing: border-box;
 }
 
@@ -37,6 +39,18 @@ p {
 	border-bottom: 1px solid #111111;
 	z-index: 1000;
 	transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-cont.dashboard {
+	width: 100%;
+	background: #ffffff;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	height: 100vh;
+	/* full viewport height */
+	overflow: hidden;
+	/* prevent scrolling */
 }
 
 .nav-container {
@@ -105,23 +119,29 @@ p {
 	border-bottom: 1px solid #111111;
 }
 
+.panel {
+	padding: 42px 40px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	overflow: hidden;
+	/* prevent inner scrolling */
+}
+
 .hero-content h1 {
 	margin: 0;
-	font-size: calc(7em + 20pt);
+	font-size: calc(8.5em + 20pt);
 	font-family: "Circular", sans-serif;
 	font-weight: 900;
 	letter-spacing: -0.05em;
 	line-height: 0.85;
 	text-transform: uppercase;
-	transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.4s ease;
 	cursor: default;
 	user-select: none;
 }
 
-.hero-content h1:hover {
-	transform: scale(1.04);
-	text-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-}
+
 
 /* ─── Layout ──────────────────────────────────────────────────────── */
 
@@ -200,9 +220,10 @@ img:hover {
 	.nav-container {
 		padding: 1rem 1.5rem;
 	}
-	
+
 	.nav-menu {
-		display: none; /* simple hidden on mobile/tablet */
+		display: none;
+		/* simple hidden on mobile/tablet */
 	}
 
 	.hero-section {
@@ -236,6 +257,7 @@ img:hover {
 }
 
 @media only screen and (max-width: 600px) {
+
 	/* aumenta la dimensione del testo all'interno di <strong> di 3pt */
 	strong {
 		font-size: calc(1em + 3pt);

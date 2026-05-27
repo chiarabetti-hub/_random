@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lancio Moneta & Statistiche</title>
 
   <style>
@@ -30,7 +31,7 @@
     }
 
     .panel {
-      padding: 22px 20px;
+      padding: 42px 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -45,7 +46,7 @@
     }
 
     .right-panel {
-      background: #f9f9f9;
+      background: #ffffff;
       justify-content: space-between;
       gap: 1.2rem;
     }
@@ -221,6 +222,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="dashboard">
@@ -240,7 +242,6 @@
 
     <!-- PANNELLO INFERIORE: STATISTICHE -->
     <div class="panel right-panel">
-      <h1>Cronologia Lanci</h1>
 
       <!-- Grafico Verticale a due Rettangoli -->
       <div class="vertical-chart-section">
@@ -250,7 +251,7 @@
             <div class="chart-bar bar-heads" id="headsBar"></div>
             <span class="bar-label">TESTA</span>
           </div>
-          
+
           <div class="chart-bar-wrapper">
             <span class="bar-count" id="tailsVal">0 (0%)</span>
             <div class="chart-bar bar-tails" id="tailsBar"></div>
@@ -300,7 +301,7 @@
 
       const result = randomCoinSide();
       const spins = Math.floor(Math.random() * 4) + 6;
-      
+
       let targetRotation = currentRotation + spins * 360;
       targetRotation = Math.ceil(targetRotation / 360) * 360;
       if (result === "CROCE") {
@@ -389,7 +390,7 @@
 
         const pHeads = Math.round((stats.heads / total) * 100);
         const pTails = Math.round((stats.tails / total) * 100);
-        
+
         headsVal.textContent = `${stats.heads} (${pHeads}%)`;
         tailsVal.textContent = `${stats.tails} (${pTails}%)`;
         totalFlipsText.textContent = `Lanci: ${total}`;
@@ -409,4 +410,5 @@
     loadStatsFromStorage();
   </script>
 </body>
+
 </html>
