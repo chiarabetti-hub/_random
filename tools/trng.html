@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin:0;
+  background:transparent;
+  font-family:Arial, sans-serif;
+  width:100vw;
+  height:140px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+
+.wrapper {
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  gap:20px;
+}
+
+.simple-step {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100px;
+}
+
+.graphic-area {
+  width:60px;
+  height:60px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.simple-label {
+  margin-top:14px;
+  font-size:13px;
+  color:#4b5563;
+  text-align:center;
+}
+
+.dot {
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#111827;
+  animation:pulseSimple 1.5s infinite;
+}
+
+.square-mini {
+  width:52px;
+  height:52px;
+  border:2px solid #111827;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+}
+
+.matrix-numbers {
+  font-size:18px;
+  letter-spacing:2px;
+  color:#111827;
+  animation:flickerNumbers 2s infinite;
+}
+
+.simple-arrow {
+  margin-top:18px;
+  font-size:24px;
+  color:#6b7280;
+}
+
+@keyframes pulseSimple {
+  0% {
+    opacity:0.4;
+    transform:scale(1);
+  }
+
+  100% {
+    opacity:1;
+    transform:scale(1.2);
+  }
+}
+
+@keyframes flickerNumbers {
+  0% { opacity:0.3; }
+  20% { opacity:1; }
+  40% { opacity:0.5; }
+  60% { opacity:1; }
+  80% { opacity:0.4; }
+  100% { opacity:1; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <div class="simple-step">
+    <div class="graphic-area">
+      <div class="dot"></div>
+    </div>
+    <div class="simple-label">Segnale fisico</div>
+  </div>
+
+  <div class="simple-arrow">→</div>
+
+  <div class="simple-step">
+    <div class="graphic-area">
+      <div class="square-mini">1010</div>
+    </div>
+    <div class="simple-label">Conversione</div>
+  </div>
+
+  <div class="simple-arrow">→</div>
+
+  <div class="simple-step">
+    <div class="graphic-area">
+      <div class="matrix-numbers" id="matrixNumbers">101101</div>
+    </div>
+    <div class="simple-label">Output</div>
+  </div>
+
+</div>
+
+<script>
+const matrix = document.getElementById('matrixNumbers');
+
+function randomBinary() {
+  let result = '';
+
+  for(let i = 0; i < 6; i++) {
+    result += Math.random() > 0.5 ? '1' : '0';
+  }
+
+  matrix.textContent = result;
+}
+
+let running = true;
+
+setInterval(() => {
+  running = !running;
+}, 2000);
+
+setInterval(() => {
+  if(running) {
+    randomBinary();
+  }
+}, 500);
+</script>
+
+</body>
+</html>

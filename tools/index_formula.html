@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCG Determinism — _random</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+--bg: #ffffff;
+--text: #000000;
+--text-dim: #666666;
+--border: #000000;
+--border-light: #e0e0e0;
+--font-mono: 'JetBrains Mono', monospace;
+--font-sans: 'Plus Jakarta Sans', sans-serif;
+}
+
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+background-color: var(--bg);
+color: var(--text);
+font-family: var(--font-sans);
+padding: 4rem 2rem;
+display: flex;
+justify-content: center;
+-webkit-font-smoothing: antialiased;
+}
+
+.workspace {
+width: 100%;
+max-width: 1100px;
+display: grid;
+grid-template-columns: 340px 1fr;
+gap: 5rem;
+}
+
+/* Colonna Sinistra: Controlli */
+.panel-controls {
+display: flex;
+flex-direction: column;
+justify-content: flex-start;
+}
+
+.control-list {
+display: flex;
+flex-direction: column;
+gap: 1.5rem;
+}
+
+.control-item {
+display: flex;
+flex-direction: column;
+gap: 0.5rem;
+}
+
+.control-label {
+font-family: var(--font-mono);
+font-size: 0.75rem;
+font-weight: 700;
+text-transform: uppercase;
+color: var(--text);
+}
+
+/* Input numerici in stile minimalist/brutalist box */
+.stepper {
+display: flex;
+align-items: center;
+position: relative;
+}
+
+.stepper button {
+background: var(--bg);
+border: 1px solid var(--border);
+color: var(--text);
+font-family: var(--font-mono);
+font-size: 1.2rem;
+font-weight: 400;
+cursor: pointer;
+width: 40px;
+height: 40px;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background 0.15s ease;
+user-select: none;
+}
+
+.stepper button:hover {
+background: #f5f5f5;
+}
+
+.stepper button:active {
+background: #eeeeee;
+}
+
+.stepper input {
+flex-grow: 1;
+height: 40px;
+background: var(--bg);
+border-top: 1px solid var(--border);
+border-bottom: 1px solid var(--border);
+border-left: none;
+border-right: none;
+color: var(--text);
+text-align: center;
+font-family: var(--font-mono);
+font-size: 1rem;
+font-weight: 500;
+outline: none;
+width: 100%;
+}
+
+/* Raddoppia i bordi interni per evitare sovrapposizioni errate */
+.stepper button:first-of-type {
+border-right: 1px solid var(--border);
+}
+.stepper button:last-of-type {
+border-left: 1px solid var(--border);
+}
+
+/* Rimuove le frecce native */
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+
+/* Colonna Destra: Area Grafico */
+.panel-visualization {
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+min-width: 0;
+}
+
+.chart-container {
+position: relative;
+width: 100%;
+height: 420px;
+border: 1px solid var(--border-light);
+padding: 1rem;
+}
+
+/* Info inferiore stile blocco di codice */
+.live-formula {
+margin-top: 2rem;
+padding-top: 1.5rem;
+border-top: 1px solid var(--border);
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-family: var(--font-mono);
+font-size: 0.8rem;
+color: var(--text-dim);
+}
+
+.live-formula strong {
+color: var(--text);
+font-weight: 700;
+}
+
+/* Responsive Layout */
+@media (max-width: 868px) {
+.workspace {
+grid-template-columns: 1fr;
+gap: 3rem;
+}
+body {
+padding: 2rem 1.5rem;
+}
+.chart-container {
+height: 320px;
+}
+.live-formula {
+flex-direction: column;
+align-items: flex-start;
+gap: 0.5rem;
+}
+}
+</style>
+</head>
+<body>
+<div class="workspace">
+<div class="panel-controls">
+<div class="control-list">
+<div class="control-item">
+<span class="control-label">Moltiplicatore (a)</span>
+<div class="stepper">
+<button onmousedown="startStep('multiplier', -1)" onmouseup="stopStep()"
+onmouseleave="stopStep()" ontouchstart="startStep('multiplier', -1)"
+ontouchend="stopStep()">−</button>
+<input type="number" id="multiplier" value="9" min="1" max="100" readonly>
+<button onmousedown="startStep('multiplier', 1)" onmouseup="stopStep()"
+onmouseleave="stopStep()" ontouchstart="startStep('multiplier', 1)"
+ontouchend="stopStep()">+</button>
+</div>
+</div>
+<div class="control-item">
+<span class="control-label">Incremento (c)</span>
+<div class="stepper">
+<button onmousedown="startStep('increment', -1)" onmouseup="stopStep()"
+onmouseleave="stopStep()" ontouchstart="startStep('increment', -1)"
+ontouchend="stopStep()">−</button>
+<input type="number" id="increment" value="3" min="0" max="100" readonly>
+<button onmousedown="startStep('increment', 1)" onmouseup="stopStep()" onmouseleave="stopStep()"
+ontouchstart="startStep('increment', 1)" ontouchend="stopStep()">+</button>
+</div>
+</div>
+<div class="control-item">
+<span class="control-label">Modulo (m)</span>
+<div class="stepper">
+<button onmousedown="startStep('modulus', -1)" onmouseup="stopStep()" onmouseleave="stopStep()"
+ontouchstart="startStep('modulus', -1)" ontouchend="stopStep()">−</button>
+<input type="number" id="modulus" value="31" min="2" max="256" readonly>
+<button onmousedown="startStep('modulus', 1)" onmouseup="stopStep()" onmouseleave="stopStep()"
+ontouchstart="startStep('modulus', 1)" ontouchend="stopStep()">+</button>
+</div>
+</div>
+<div class="control-item">
+<span class="control-label">Seme Iniziale (X₀)</span>
+<div class="stepper">
+<button onmousedown="startStep('seed', -1)" onmouseup="stopStep()" onmouseleave="stopStep()"
+ontouchstart="startStep('seed', -1)" ontouchend="stopStep()">−</button>
+<input type="number" id="seed" value="1" min="0" max="255" readonly>
+<button onmousedown="startStep('seed', 1)" onmouseup="stopStep()" onmouseleave="stopStep()"
+ontouchstart="startStep('seed', 1)" ontouchend="stopStep()">+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="panel-visualization">
+<div class="chart-container">
+<canvas id="lcgChart"></canvas>
+</div>
+<div class="live-formula">
+<div>FORMULA: <strong>X_n+1 = (<span id="f-a">9</span>X_n + <span id="f-c">3</span>) mod <span id="f-m">31</span></strong></div>
+<div>SEME CORRENTE: <strong id="f-x0">1</strong></div>
+</div>
+</div>
+</div>
+<script>
+const inputA = document.getElementById('multiplier');
+const inputC = document.getElementById('increment');
+const inputM = document.getElementById('modulus');
+const inputX0 = document.getElementById('seed');
+const fA = document.getElementById('f-a');
+const fC = document.getElementById('f-c');
+const fM = document.getElementById('f-m');
+const fX0 = document.getElementById('f-x0');
+const ctx = document.getElementById('lcgChart').getContext('2d');
+let chart;
+let stepTimeout;
+let stepInterval;
+
+function startStep(id, amount) {
+changeVal(id, amount);
+stepTimeout = setTimeout(() => {
+stepInterval = setInterval(() => {
+changeVal(id, amount);
+}, 60);
+}, 400);
+}
+
+function stopStep() {
+clearTimeout(stepTimeout);
+clearInterval(stepInterval);
+}
+
+function changeVal(id, amount) {
+const input = document.getElementById(id);
+let val = parseInt(input.value) + amount;
+if (val >= parseInt(input.min) && val <= parseInt(input.max)) {
+input.value = val;
+updateSimulation();
+}
+}
+
+function generateLCG(a, c, m, x0, steps = 40) {
+const data = [];
+const labels = [];
+let current = x0;
+data.push(current);
+labels.push("");
+for (let i = 1; i < steps; i++) {
+current = (a * current + c) % m;
+data.push(current);
+labels.push("");
+}
+return { data, labels };
+}
+
+function initChart() {
+const { data, labels } = generateLCG(9, 3, 31, 1);
+chart = new Chart(ctx, {
+type: 'line',
+data: {
+labels: labels,
+datasets: [{
+data: data,
+borderColor: '#000000',
+borderWidth: 1.5,
+pointBackgroundColor: '#000000',
+pointBorderColor: '#000000',
+pointRadius: 2,
+pointHoverRadius: 5,
+fill: false,
+tension: 0.0
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+animation: false,
+plugins: { legend: { display: false } },
+scales: {
+x: { 
+grid: { display: false }, 
+border: { color: '#000000', width: 1 },
+ticks: { display: false }
+},
+y: {
+ticks: { 
+color: '#000000', 
+font: { size: 10, family: "'JetBrains Mono', monospace" } 
+},
+grid: { color: '#e0e0e0' },
+border: { color: '#000000', width: 1 },
+min: 0
+}
+}
+}
+});
+}
+
+function updateSimulation() {
+let a = parseInt(inputA.value);
+let c = parseInt(inputC.value);
+let m = parseInt(inputM.value);
+let x0 = parseInt(inputX0.value);
+
+if (x0 >= m) { x0 = m - 1; inputX0.value = x0; }
+inputX0.max = m - 1;
+if (c >= m) { c = m - 1; inputC.value = c; }
+inputC.max = m - 1;
+
+fA.innerText = a;
+fC.innerText = c;
+fM.innerText = m;
+fX0.innerText = x0;
+
+const updated = generateLCG(a, c, m, x0);
+chart.data.datasets[0].data = updated.data;
+chart.options.scales.y.max = m;
+chart.update('none');
+}
+
+initChart();
+updateSimulation();
+</script>
+</body>
+</html>
