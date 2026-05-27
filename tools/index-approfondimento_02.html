@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Generative Art</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #ffffff;
+      color: #111111;
+      font-family: "Syne", "Inter", sans-serif;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Pannello di controllo superiore */
+    .controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    input {
+      width: 150px;
+      height: 44px;
+      border-radius: 0;
+      border: 2.5px solid #111111;
+      background: rgba(0, 0, 0, 0.04);
+      color: #111111;
+      padding-left: 14px;
+      font-family: "Syne", "Inter", sans-serif;
+      font-weight: 800;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      outline: none;
+      transition: background-color 0.2s ease;
+    }
+
+    input:focus {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    input::placeholder {
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    button {
+      height: 44px;
+      border-radius: 0;
+      font-family: "Syne", "Inter", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      border: 2.5px solid #111111;
+      background: #111111;
+      color: #ffffff;
+      padding: 0 20px;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #111111;
+    }
+
+    #randomBtn {
+      background: transparent;
+      color: #111111;
+    }
+
+    #randomBtn:hover {
+      background: #111111;
+      color: #ffffff;
+    }
+
+    /* Stile per il tasto di salvataggio */
+    #saveBtn {
+      background: #111111;
+      color: #ffffff;
+      border-color: #111111;
+    }
+
+    #saveBtn:hover {
+      background: #00ccaa;
+      border-color: #00ccaa;
+      color: #111111;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="controls">
+    <input type="number" id="seedInput" placeholder="Inserisci numero">
+    <button id="generateBtn">Genera</button>
+    <button id="randomBtn">Seed Casuale</button>
+    <button id="saveBtn">Salva PNG</button>
+  </div>
+
+  <script>
+    let currentSeed = 314159;
+
+    // Generatore di numeri pseudo-casuali deterministici basato sul seed
+    function seededRandom(seed) {
+      let x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function setup() {
+      // Crea il canvas a tutto schermo
+      createCanvas(windowWidth, windowHeight);
+      noLoop(); // Disattiva il loop continuo, disegna solo quando serve
+      redraw();
+    }
+
+    function draw() {
+      background(255); // Sfondo bianco del canvas p5.js
+      generateArtwork(currentSeed);
+    }
+
+    function generateArtwork(seed) {
+      // REGOLA: La densità della griglia cambia in base al valore del seed (minimo 6, massimo 16)
+      let grid = floor(map(seededRandom(seed), 0, 1, 6, 16));
+
+      let size = min(width, height) * 0.8;
+      let cell = size / grid;
+
+      let offsetX = width / 2 - size / 2;
+      let offsetY = height / 2 - size / 2;
+
+      let localSeed = seed;
+
+      // REGOLA: La quantità base di elementi dipende dalla grandezza del numero inserito
+      // Numeri più grandi generano più elementi ricorsivi all'interno delle celle
+      let baseAmount = floor(map(seed % 1000, 0, 999, 3, 15));
+
+      for (let y = 0; y < grid; y++) {
+        for (let x = 0; x < grid; x++) {
+
+          let r = seededRandom(localSeed);
+
+          // REGOLA: Posizione e offset leggermente dinamici per rompere la griglia rigida
+          let posX = offsetX + x * cell + cell / 2 + (r - 0.5) * (cell * 0.2);
+          let posY = offsetY + y * cell + cell / 2 + (seededRandom(localSeed + 1) - 0.5) * (cell * 0.2);
+
+          // REGOLA: La rotazione iniziale della cella dipende totalmente dal valore del seed
+          let rotationValue = r * TWO_PI * (seed % 10);
+
+          push();
+          translate(posX, posY);
+          rotate(rotationValue);
+
+          noFill();
+          rectMode(CENTER);
+
+          // Quantità effettiva di elementi in questa cella
+          let amount = baseAmount + floor(r * 5);
+
+          for (let i = 0; i < amount; i++) {
+            let localRandom = seededRandom(localSeed + i * 45);
+
+            // REGOLA: Grandezza dinamica variabile continuamente
+            let rectSize = (cell * 0.3) + (localRandom * cell * 0.9);
+
+            // REGOLA: Colori associati ai valori numerici (Pari = Freddi, Dispari = Caldi)
+            if (seed % 2 === 0) {
+              // Palette Fredda: Blu, Azzurro, Verde acqua, Viola
+              let g = floor(map(localRandom, 0, 1, 50, 200));
+              let b = floor(map(seededRandom(localSeed + i), 0, 1, 150, 255));
+              stroke(0, g, b, 120);
+            } else {
+              // Palette Calda: Rosso, Arancione, Giallo, Rosa
+              let rColor = floor(map(localRandom, 0, 1, 180, 255));
+              let gColor = floor(map(seededRandom(localSeed + i), 0, 1, 30, 120));
+              stroke(rColor, gColor, 50, 120);
+            }
+
+            // Spessore linea dinamico
+            strokeWeight(1 + localRandom * 3);
+
+            // Ulteriore rotazione e spostamento continuo delle forme interne
+            rotate(localRandom * HALF_PI);
+
+            // Disegna forme geometriche (rettangoli con angoli leggermente smussati)
+            rect(
+              (seededRandom(localSeed + i * 2) - 0.5) * (cell * 0.1),
+              (seededRandom(localSeed + i * 3) - 0.5) * (cell * 0.1),
+              rectSize,
+              rectSize,
+              localRandom * 10
+            );
+          }
+
+          pop();
+          localSeed += 23; // Incremento per differenziare la cella successiva
+        }
+      }
+    }
+
+    // Interazioni con la UI
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      let value = parseInt(document.getElementById('seedInput').value);
+      if (isNaN(value)) {
+        value = Math.floor(Math.random() * 999999);
+      }
+      currentSeed = value;
+      document.getElementById('seedInput').value = currentSeed;
+      redraw();
+    });
+
+    document.getElementById('randomBtn').addEventListener('click', () => {
+      currentSeed = Math.floor(Math.random() * 999999);
+      document.getElementById('seedInput').value = currentSeed;
+      redraw();
+    });
+
+    // Funzione per salvare il canvas come immagine PNG
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      saveCanvas('generative-art-' + currentSeed, 'png');
+    });
+
+    // Comandabile anche con la barra spaziatrice
+    function keyPressed() {
+      if (key === ' ') {
+        currentSeed = Math.floor(Math.random() * 999999);
+        document.getElementById('seedInput').value = currentSeed;
+        redraw();
+      }
+    }
+
+    // Adatta il canvas se la finestra cambia dimensione
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      redraw();
+    }
+  </script>
+
+</body>
+
+</html>

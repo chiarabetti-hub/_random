@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lancio Moneta & Statistiche</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: #ffffff;
+      color: #111111;
+      padding: 0;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .dashboard {
+      width: 100%;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .panel {
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .left-panel {
+      background: #ffffff;
+      border-bottom: 3px solid #111111;
+      justify-content: center;
+      gap: 1.2rem;
+    }
+
+    .right-panel {
+      background: #f9f9f9;
+      justify-content: space-between;
+      gap: 1.2rem;
+    }
+
+    h1 {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 0;
+      margin-bottom: 3px;
+      border-bottom: 1.5px solid #111111;
+      padding-bottom: 6px;
+      width: 100%;
+      color: #111111;
+      text-align: center;
+    }
+
+    /* COIN CSS */
+    .coin-container {
+      perspective: 1000px;
+      width: 130px;
+      height: 130px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .coin {
+      width: 120px;
+      height: 120px;
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform 0.15s ease;
+    }
+
+    .coin-container:hover .coin {
+      transform: scale(1.05);
+    }
+
+    .face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid #111111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .heads {
+      background: #111111;
+      color: #ffffff;
+    }
+
+    .tails {
+      background: #ffffff;
+      color: #111111;
+      transform: rotateY(180deg);
+    }
+
+    .instruction-text {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #666666;
+      font-weight: 600;
+    }
+
+    /* VERTICAL CHART */
+    .vertical-chart-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .chart-container {
+      display: flex;
+      justify-content: center;
+      gap: 3.5rem;
+      align-items: flex-end;
+      height: 110px;
+      width: 100%;
+      border-bottom: 2px solid #111111;
+      padding-bottom: 6px;
+    }
+
+    .chart-bar-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      width: 70px;
+    }
+
+    .chart-bar {
+      width: 36px;
+      height: 0px;
+      transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bar-heads {
+      background: #111111;
+      border: 2px solid #111111;
+    }
+
+    .bar-tails {
+      background: #ffffff;
+      border: 2px solid #111111;
+    }
+
+    .bar-count {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #111111;
+      white-space: nowrap;
+    }
+
+    .bar-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #111111;
+      margin-top: 4px;
+    }
+
+    /* SIMPLIFIED METRICS PANEL */
+    .bottom-stats-panel {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .ratio-text {
+      font-size: 0.78rem;
+      color: #666666;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    /* BUTTONS */
+    #resetBtn {
+      border: 2.5px solid #111111;
+      background: transparent;
+      color: #111111;
+      padding: 8px 18px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 0;
+      width: 100%;
+      max-width: 150px;
+    }
+
+    #resetBtn:hover {
+      background: #111111;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard">
+    <!-- PANNELLO SUPERIORE: LANCIO -->
+    <div class="panel left-panel">
+      <h1>Lancio Moneta</h1>
+
+      <div class="coin-container" id="coinContainer">
+        <div class="coin" id="coin">
+          <div class="face heads">TESTA</div>
+          <div class="face tails">CROCE</div>
+        </div>
+      </div>
+
+      <div class="instruction-text">Premi sulla moneta per lanciare</div>
+    </div>
+
+    <!-- PANNELLO INFERIORE: STATISTICHE -->
+    <div class="panel right-panel">
+      <h1>Cronologia Lanci</h1>
+
+      <!-- Grafico Verticale a due Rettangoli -->
+      <div class="vertical-chart-section">
+        <div class="chart-container">
+          <div class="chart-bar-wrapper">
+            <span class="bar-count" id="headsVal">0 (0%)</span>
+            <div class="chart-bar bar-heads" id="headsBar"></div>
+            <span class="bar-label">TESTA</span>
+          </div>
+          
+          <div class="chart-bar-wrapper">
+            <span class="bar-count" id="tailsVal">0 (0%)</span>
+            <div class="chart-bar bar-tails" id="tailsBar"></div>
+            <span class="bar-label">CROCE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Lanci centrata sopra il tasto Resetta -->
+      <div class="bottom-stats-panel">
+        <span id="totalFlips" class="ratio-text">Lanci: 0</span>
+      </div>
+
+      <button id="resetBtn">Resetta</button>
+    </div>
+  </div>
+
+  <script>
+    const coin = document.getElementById("coin");
+    const coinContainer = document.getElementById("coinContainer");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const headsVal = document.getElementById("headsVal");
+    const tailsVal = document.getElementById("tailsVal");
+    const totalFlipsText = document.getElementById("totalFlips");
+
+    // Elementi del Grafico
+    const headsBar = document.getElementById("headsBar");
+    const tailsBar = document.getElementById("tailsBar");
+
+    let flipping = false;
+    let currentRotation = 0;
+    let stats = { heads: 0, tails: 0, history: [] };
+
+    // Generatore numeri casuali crittografici
+    function randomCoinSide() {
+      const randomArray = new Uint32Array(1);
+      crypto.getRandomValues(randomArray);
+      return randomArray[0] % 2 === 0 ? "TESTA" : "CROCE";
+    }
+
+    // Gestione Lancio Moneta
+    function flipCoin() {
+      if (flipping) return;
+      flipping = true;
+      resetBtn.disabled = true;
+
+      const result = randomCoinSide();
+      const spins = Math.floor(Math.random() * 4) + 6;
+      
+      let targetRotation = currentRotation + spins * 360;
+      targetRotation = Math.ceil(targetRotation / 360) * 360;
+      if (result === "CROCE") {
+        targetRotation += 180;
+      }
+      currentRotation = targetRotation;
+
+      coin.style.transition = "none";
+      coin.offsetHeight; // force reflow
+      coin.style.transition = "transform 1.4s cubic-bezier(0.2, 0.8, 0.2, 1)";
+      coin.style.transform = `rotateY(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        flipping = false;
+        resetBtn.disabled = false;
+
+        // Aggiorna le statistiche dopo che la moneta è atterrata
+        updateStats(result);
+      }, 1450);
+    }
+
+    // Gestione dati statistici
+    function updateStats(result) {
+      // Eseguiamo 1.000 lanci casuali simulati per il grafico
+      for (let i = 0; i < 1000; i++) {
+        const simResult = randomCoinSide();
+        if (simResult === "TESTA") {
+          stats.heads += 1;
+        } else {
+          stats.tails += 1;
+        }
+        stats.history.push(simResult);
+      }
+
+      // Limitiamo la cronologia per evitare di riempire il localStorage
+      if (stats.history.length > 5000) {
+        stats.history = stats.history.slice(-5000);
+      }
+
+      saveStatsToStorage();
+      updateUI();
+    }
+
+    function saveStatsToStorage() {
+      try {
+        localStorage.setItem('coin_toss_stats', JSON.stringify(stats));
+      } catch (e) {
+        console.error("Errore scrittura localStorage", e);
+      }
+    }
+
+    function loadStatsFromStorage() {
+      try {
+        const stored = localStorage.getItem('coin_toss_stats');
+        if (stored) {
+          stats = JSON.parse(stored);
+        } else {
+          stats = { heads: 0, tails: 0, history: [] };
+        }
+      } catch (e) {
+        console.error("Errore lettura localStorage", e);
+        stats = { heads: 0, tails: 0, history: [] };
+      }
+      updateUI();
+    }
+
+    function updateUI() {
+      const total = stats.heads + stats.tails;
+
+      // Calcola altezze colonne grafiche (altezza max 80px per stare comodamente)
+      const maxVal = Math.max(stats.heads, stats.tails);
+      const maxHeight = 80;
+
+      if (total === 0) {
+        headsBar.style.height = "0px";
+        tailsBar.style.height = "0px";
+        headsVal.textContent = "0 (0%)";
+        tailsVal.textContent = "0 (0%)";
+        totalFlipsText.textContent = "Lanci: 0";
+      } else {
+        const hHeight = maxVal > 0 ? (stats.heads / maxVal) * maxHeight : 0;
+        const tHeight = maxVal > 0 ? (stats.tails / maxVal) * maxHeight : 0;
+
+        headsBar.style.height = `${hHeight}px`;
+        tailsBar.style.height = `${tHeight}px`;
+
+        const pHeads = Math.round((stats.heads / total) * 100);
+        const pTails = Math.round((stats.tails / total) * 100);
+        
+        headsVal.textContent = `${stats.heads} (${pHeads}%)`;
+        tailsVal.textContent = `${stats.tails} (${pTails}%)`;
+        totalFlipsText.textContent = `Lanci: ${total}`;
+      }
+    }
+
+    // Reset generale
+    resetBtn.addEventListener("click", () => {
+      stats = { heads: 0, tails: 0, history: [] };
+      saveStatsToStorage();
+      updateUI();
+    });
+
+    coinContainer.addEventListener("click", flipCoin);
+
+    // Inizializzazione
+    loadStatsFromStorage();
+  </script>
+</body>
+</html>

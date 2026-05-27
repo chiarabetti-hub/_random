@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Generative Art - WOW Edition</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #ffffff;
+      color: #111111;
+      /* Sfondo ancora più profondo per l'effetto WOW */
+      font-family: "Syne", "Inter", sans-serif;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Pannello di controllo superiore */
+    .controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    input {
+      width: 150px;
+      height: 44px;
+      border-radius: 0;
+      border: 2.5px solid rgba(0, 0, 0, 0.7);
+      background: rgba(255, 255, 255, 0.5);
+      color: #111111;
+      padding-left: 14px;
+      font-family: "Syne", "Inter", sans-serif;
+      font-weight: 800;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      outline: none;
+      backdrop-filter: blur(5px);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: #111111;
+    }
+
+    input::placeholder {
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    button {
+      height: 44px;
+      border-radius: 0;
+      font-family: "Syne", "Inter", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      border: 2.5px solid #111111;
+      background: #111111;
+      color: #ffffff;
+      padding: 0 20px;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #111111;
+    }
+
+    #randomBtn {
+      background: rgba(0, 0, 0, 0.04);
+      color: #111111;
+      backdrop-filter: blur(5px);
+    }
+
+    #randomBtn:hover {
+      background: #111111;
+      color: #ffffff;
+    }
+
+    #saveBtn {
+      background: #111111;
+      color: #ffffff;
+      border-color: #111111;
+    }
+
+    #saveBtn:hover {
+      background: #00ccaa;
+      border-color: #00ccaa;
+      color: #111111;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="controls">
+    <input type="number" id="seedInput" placeholder="Inserisci numero">
+    <button id="generateBtn">Genera</button>
+    <button id="randomBtn">Seed Casuale</button>
+    <button id="saveBtn">Salva PNG</button>
+  </div>
+
+  <script>
+    let currentSeed = 314159;
+
+    // Generatore di numeri pseudo-casuali deterministici basato sul seed
+    function seededRandom(seed) {
+      let x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      noLoop();
+      redraw();
+    }
+
+    function draw() {
+      background(255); // Sfondo bianco del canvas p5.js
+      generateArtwork(currentSeed);
+    }
+
+    function generateArtwork(seed) {
+      // REGOLA: Densità griglia dinamica (tra 4 e 10 per lasciare spazio alle forme WOW)
+      let grid = floor(map(seededRandom(seed), 0, 1, 4, 10));
+
+      let size = min(width, height) * 0.82;
+      let cell = size / grid;
+
+      let offsetX = width / 2 - size / 2;
+      let offsetY = height / 2 - size / 2;
+
+      let localSeed = seed;
+
+      // Quantità base di elementi interni ricorsivi
+      let baseAmount = floor(map(seed % 500, 0, 499, 8, 25));
+
+      for (let y = 0; y < grid; y++) {
+        for (let x = 0; x < grid; x++) {
+
+          let r = seededRandom(localSeed);
+
+          // Posizione leggermente fluttuante
+          let posX = offsetX + x * cell + cell / 2 + (r - 0.5) * (cell * 0.15);
+          let posY = offsetY + y * cell + cell / 2 + (seededRandom(localSeed + 5) - 0.5) * (cell * 0.15);
+
+          // Rotazione di base della cella dipendente dal seed
+          let rotationValue = r * TWO_PI * (seed % 7 + 1);
+
+          push();
+          translate(posX, posY);
+          rotate(rotationValue);
+
+          noFill();
+
+          let amount = baseAmount + floor(r * 10);
+
+          for (let i = 0; i < amount; i++) {
+            let localRandom = seededRandom(localSeed + i * 73);
+
+            // Grandezza dinamica ed espansiva (effetto WOW)
+            let shapeSize = (cell * 0.2) + (localRandom * cell * 1.3);
+
+            // REGOLA COLORI (Pari = Freddi / Dispari = Caldi) con sfumature al neon cangianti
+            if (seed % 2 === 0) {
+              // Palette Fredda WOW: Cyan elettrico, Viola neon, Blu profondo, Verde acido
+              let rColor = floor(map(localRandom, 0, 1, 0, 130));
+              let gColor = floor(map(seededRandom(localSeed + i), 0, 1, 100, 255));
+              let bColor = floor(map(seededRandom(localSeed + i * 2), 0, 1, 200, 255));
+              stroke(rColor, gColor, bColor, 60); // Opacità bassa per effetto accumulo luce
+            } else {
+              // Palette Calda WOW: Magenta, Rosso fuoco, Oro, Arancio elettrico
+              let rColor = floor(map(localRandom, 0, 1, 230, 255));
+              let gColor = floor(map(seededRandom(localSeed + i), 0, 1, 0, 160));
+              let bColor = floor(map(seededRandom(localSeed + i * 2), 0, 1, 50, 120));
+              stroke(rColor, gColor, bColor, 60);
+            }
+
+            // Spessore linea che varia creando texture setose o marcate
+            strokeWeight(0.8 + localRandom * 2.5);
+
+            // Rotazione a spirale matematica progressiva
+            rotate(localRandom * 0.2 + (i * 0.05));
+
+            // --- EFFETTO WOW: FORMA GEOMETRICA FLUIDA E STRATIFICATA ---
+            // Genera una forma complessa a stella/margherita asimmetrica
+            beginShape();
+            let points = floor(map(localRandom, 0, 1, 4, 12)); // Da 4 a 12 vertici complessi
+            for (let j = 0; j < points; j++) {
+              let angle = TWO_PI / points * j;
+              // Il raggio oscilla creando onde armoniche spettacolari
+              let rMod = shapeSize * (0.6 + 0.4 * sin(angle * (seed % 5 + 2) + localRandom * 5));
+              let sx = cos(angle) * rMod;
+              let sy = sin(angle) * rMod;
+
+              // Usa curve o vertici in base al seed per variare lo stile radicalmente
+              if ((seed + i) % 3 === 0) {
+                curveVertex(sx, sy);
+              } else {
+                vertex(sx, sy);
+              }
+            }
+            endShape(CLOSE);
+
+          }
+
+          pop();
+          localSeed += 37; // Salto di seed per la cella successiva
+        }
+      }
+    }
+
+    // Interazioni con la UI
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      let value = parseInt(document.getElementById('seedInput').value);
+      if (isNaN(value)) {
+        value = Math.floor(Math.random() * 999999);
+      }
+      currentSeed = value;
+      document.getElementById('seedInput').value = currentSeed;
+      redraw();
+    });
+
+    document.getElementById('randomBtn').addEventListener('click', () => {
+      currentSeed = Math.floor(Math.random() * 999999);
+      document.getElementById('seedInput').value = currentSeed;
+      redraw();
+    });
+
+    // NUOVO: Funzione per salvare lo screenshot in formato PNG
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      saveCanvas('generative-art-' + currentSeed, 'png');
+    });
+
+    // Comandabile anche con la barra spaziatrice
+    function keyPressed() {
+      if (key === ' ') {
+        currentSeed = Math.floor(Math.random() * 999999);
+        document.getElementById('seedInput').value = currentSeed;
+        redraw();
+      }
+    }
+
+    // Adatta il canvas se la finestra cambia dimensione
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      redraw();
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,243 @@
+*, *:before, *:after {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	background-color: #ffffff;
+	color: #111111;
+	padding: 0;
+	margin: 0;
+	font-family: "Syne", sans-serif;
+	font-optical-sizing: auto;
+	font-weight: 400;
+	font-style: normal;
+	font-variation-settings: "slnt" 0;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+p {
+	margin: 0 0 1.2em 0;
+	max-width: 45em;
+	line-height: 1.65;
+}
+
+/* ─── Navigation Bar ──────────────────────────────────────────────── */
+
+.nav-bar {
+	position: sticky;
+	top: 0;
+	background-color: rgba(255, 255, 255, 0.92);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border-bottom: 1px solid #111111;
+	z-index: 1000;
+	transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-container {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem 2rem;
+}
+
+.nav-logo {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	text-decoration: none;
+	color: #111111;
+	font-weight: 900;
+	font-family: "Circular", "Inter", sans-serif;
+	letter-spacing: 0.05em;
+}
+
+.nav-menu {
+	display: flex;
+	gap: 2rem;
+}
+
+.nav-menu a {
+	text-decoration: none;
+	color: #111111;
+	font-size: 0.8rem;
+	font-weight: 900;
+	font-family: "Circular", "Inter", sans-serif;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	position: relative;
+	padding: 0.2rem 0;
+	transition: opacity 0.2s ease;
+}
+
+.nav-menu a::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 0;
+	height: 1px;
+	background-color: #111111;
+	transition: width 0.25s ease;
+}
+
+.nav-menu a:hover::after {
+	width: 100%;
+}
+
+/* ─── Hero / Header ───────────────────────────────────────────────── */
+
+.hero-section {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 10rem 2rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	border-bottom: 1px solid #111111;
+}
+
+.hero-content h1 {
+	margin: 0;
+	font-size: calc(7em + 20pt);
+	font-family: "Circular", sans-serif;
+	font-weight: 900;
+	letter-spacing: -0.05em;
+	line-height: 0.85;
+	text-transform: uppercase;
+	transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.4s ease;
+	cursor: default;
+	user-select: none;
+}
+
+.hero-content h1:hover {
+	transform: scale(1.04);
+	text-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Layout ──────────────────────────────────────────────────────── */
+
+.contenitore {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 2rem;
+}
+
+/* ─── Sections ────────────────────────────────────────────────────── */
+
+.filetto {
+	display: grid;
+	grid-template-columns: 300px 1fr;
+	gap: 4rem;
+	border-top: none;
+	border-bottom: 1px solid #111111;
+	padding: 5rem 0;
+	position: relative;
+}
+
+.filetto:last-of-type {
+	border-bottom: none;
+}
+
+.titolo-sezione {
+	margin: 0;
+	font-family: "Circular", sans-serif;
+	font-size: 23pt;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+	position: sticky;
+	top: 100px;
+	align-self: start;
+}
+
+.contenuto-sezione {
+	margin-left: 0;
+	font-size: calc(1em + 5pt);
+	line-height: 1.65;
+}
+
+/* ─── Lists ───────────────────────────────────────────────────────── */
+
+ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* ─── Links ───────────────────────────────────────────────────────── */
+
+a {
+	transition: opacity 0.2s ease;
+}
+
+a:hover {
+	opacity: 0.6;
+}
+
+/* ─── Images ──────────────────────────────────────────────────────── */
+
+img {
+	transition: opacity 0.3s ease;
+	max-width: 100%;
+	height: auto;
+}
+
+img:hover {
+	opacity: 0.88;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+
+@media only screen and (max-width: 960px) {
+	.nav-container {
+		padding: 1rem 1.5rem;
+	}
+	
+	.nav-menu {
+		display: none; /* simple hidden on mobile/tablet */
+	}
+
+	.hero-section {
+		padding: 4rem 1.5rem 2rem;
+		gap: 2rem;
+	}
+
+	.hero-content h1 {
+		font-size: calc(3em + 5pt);
+	}
+
+	.filetto {
+		grid-template-columns: 1fr;
+		gap: 2rem;
+		padding: 3rem 0;
+	}
+
+	.titolo-sezione {
+		position: static;
+		width: 100%;
+	}
+
+	.contenuto-sezione {
+		width: 100%;
+		margin-left: 0;
+	}
+
+	.contenitore {
+		padding: 0 1.5rem;
+	}
+}
+
+@media only screen and (max-width: 600px) {
+	/* aumenta la dimensione del testo all'interno di <strong> di 3pt */
+	strong {
+		font-size: calc(1em + 3pt);
+	}
+}
